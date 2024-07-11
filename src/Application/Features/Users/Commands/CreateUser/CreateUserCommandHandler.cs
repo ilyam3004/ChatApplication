@@ -22,12 +22,10 @@ public class CreateUserCommandHandler
         var user = new User
         {
             UserId = Guid.NewGuid(),
-            ChatId = Guid.NewGuid(),
-            ConnectionId = Guid.NewGuid().ToString(),
             Username = command.Username
         };
 
-        _userRepository.AddAsync(user);
+        await _userRepository.AddAsync(user);
 
         return new UserResult(user);
     }

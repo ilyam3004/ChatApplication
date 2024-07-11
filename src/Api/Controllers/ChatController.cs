@@ -1,5 +1,7 @@
 using Application.Features.Chats.Commands.CreateChat;
+using Application.Features.Chats.Commands.RemoveChat;
 using Application.Features.Chats.Queries.GetAllChats;
+using Application.Features.Chats.Queries.SearchChat;
 using Microsoft.AspNetCore.Mvc;
 using Contracts.Responses;
 using Contracts.Requests;
@@ -28,7 +30,7 @@ public class ChatController : ApiController
         var result = await _sender.Send(query);
 
         return result.Match(
-            value => Ok(_mapper.Map<ChatResponse>(value)), 
+            value => Ok(_mapper.Map<List<ChatResponse>>(value)), 
             Problem);
     }
     
@@ -44,22 +46,25 @@ public class ChatController : ApiController
             Problem);
     }
 
-    // [HttpDelete("{chatId}")]
-    // public async Task<IActionResult> CreateChat(Guid chatId)
-    // {
-    //     var query = _mapper.Map<RemoveChatCommand>(request);
-    //
-    //     var result = await _sender.Send(query);
-    //
-    //     return result.Match(
-    //         value => Ok(_mapper.Map<ChatResponse>(value)), 
-    //         Problem);
-    // }
-    
-    
-    [HttpGet("{query}")]
-    public async Task<IActionResult> SearchChats(string query)
+    [HttpDelete]
+    public async Task<IActionResult> RemoveChat(RemoveChatRequest request)
     {
-        return Ok();
+        var query = _mapper.Map<RemoveChatCommand>(request);
+    
+        var result = await _sender.Send(query);
+    
+        return result.Match(Ok, Problem);
+    }
+    
+    [HttpGet("{searchQuery}")]
+    public async Task<IActionResult> SearchChats(string searchQuery)
+    {
+        var query = new SearchChatsQuery(searchQuery);
+
+        var result = await _sender.Send(query);
+
+        return result.Match(
+            value => Ok(_mapper.Map<List<ChatResponse>>(value)),
+            Problem);
     }
 }

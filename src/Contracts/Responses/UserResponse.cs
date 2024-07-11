@@ -1,5 +1,5 @@
 namespace Contracts.Responses;
 
 public record UserResponse(
-    string UserId,
+    Guid UserId,
     string Username);

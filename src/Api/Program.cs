@@ -20,7 +20,7 @@ var app = builder.Build();
         .AllowAnyMethod()
         .AllowCredentials());
 
-    app.MapHub<ChatHub>("/chatHub");
+    app.MapHub<ChatHub>("chat-hub");
     app.MapControllers();
     app.Run();
 }

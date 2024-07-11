@@ -10,6 +10,7 @@ public class ChatMappingConfig : IRegister
     {
         config.NewConfig<ChatResult, ChatResponse>()
             .Map(dest => dest.ChatId, src => src.Chat.ChatId)
+            .Map(dest => dest.ChatOwnerId, src => src.Chat.ChatOwnerId)
             .Map(dest => dest.ChatName, src => src.Chat.ChatName);
     }
 }

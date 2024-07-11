@@ -6,6 +6,5 @@ public class Chat
     public Guid ChatOwnerId { get; set; }
     public string ChatName { get; set; }
 
-    public List<User> Users { get; set; }
     public List<Message> Messages { get; set; }
 }

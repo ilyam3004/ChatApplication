@@ -5,4 +5,5 @@ using MediatR;
 namespace Application.Features.Chats.Commands.CreateChat;
 
 public record CreateChatCommand(
-    string ChatName) : IRequest<Result<ChatResult>>;
+    string ChatName,
+    Guid UserId) : IRequest<Result<ChatResult>>;

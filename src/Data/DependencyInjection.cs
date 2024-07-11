@@ -1,7 +1,7 @@
-using Data.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Data.Repositories;
 
 namespace Data;
 
@@ -15,6 +15,7 @@ public static class DependencyInjection
                 .GetConnectionString("DefaultConnection")));
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IChatRepository, ChatRepository>();
         
         MigrateDatabase(services); 
         

@@ -17,10 +17,6 @@ public class ChatEntityConfiguration : IEntityTypeConfiguration<Chat>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasMany(c => c.Users)
-            .WithOne(u => u.Chat)
-            .HasForeignKey(u => u.ChatId);
-
         builder.HasMany(c => c.Messages)
             .WithOne(m => m.Chat)
             .HasForeignKey(m => m.ChatId);

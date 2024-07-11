@@ -1,7 +1,7 @@
 using Application.Common.Result;
 using Application.Models.Chats;
-using Data.Entities;
 using Data.Repositories;
+using Data.Entities;
 using MediatR;
 
 namespace Application.Features.Chats.Commands.CreateChat;
@@ -22,6 +22,7 @@ public class CreateChatCommandHandler
         Chat chat = new()
         {
             ChatId = Guid.NewGuid(),
+            ChatOwnerId = command.UserId,
             ChatName = command.ChatName
         };
 

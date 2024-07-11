@@ -14,13 +14,6 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(u => u.ConnectionId)
-            .IsRequired();
-
-        builder.HasOne(u => u.Chat)
-            .WithMany(c => c.Users)
-            .HasForeignKey(u => u.ChatId);
-
         builder.HasMany(u => u.Messages)
             .WithOne(m => m.User)
             .HasForeignKey(m => m.UserId);
