@@ -1,6 +1,6 @@
 using Application.Common.Constants;
 using Application.Common.Result;
-using Application.Models.Chats;
+using Application.Models;
 using Data.Repositories;
 using MediatR;
 

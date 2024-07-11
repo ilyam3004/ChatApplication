@@ -1,5 +1,5 @@
 using Application.Common.Result;
-using Application.Models.Chats;
+using Application.Models;
 using MediatR;
 
 namespace Application.Features.Chats.Queries.SearchChat;

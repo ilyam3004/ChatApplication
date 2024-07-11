@@ -1,6 +1,7 @@
 using Application.Features.Chats.Commands.JoinChat;
 using Microsoft.AspNetCore.SignalR;
 using Api.Common.Helpers;
+using Application.Features.Messages.Commands.SaveMessage;
 using Contracts.Requests;
 using Contracts.Responses;
 using MapsterMapper;
@@ -19,34 +20,63 @@ public class ChatHub : Hub
         _sender = sender;
     }
     
-    public async Task JoinChat(JoinChatRequest request)
+    public async Task TestMe(string someRandomText)
     {
-        var command = _mapper.Map<JoinChatCommand>(request);
+        await Clients.All.SendAsync(
+            $"{this.Context.User.Identity.Name} : {someRandomText}",
+            CancellationToken.None);
+    }    
+
+    public async Task JoinChat(string UserId, string ChatId)
+    {
+        var command = new JoinChatCommand(
+            Guid.Parse(UserId),
+            Guid.Parse(ChatId));
 
         var result = await _sender.Send(command);
-        
+
         await result.Match(
             async value =>
             {
                 var response = _mapper.Map<UserResponse>(value);
-                await JoinUserToChatAndNotifyAboutAddingUser(request.ChatId, response);
+                await JoinUserToChatAndNotifyAboutAddingUser(ChatId, response);
             },
             async onError =>
                 await Clients
                     .Client(Context.ConnectionId)
-                    .SendAsync("ReceiveError", 
+                    .SendAsync("ReceiveError",
                         ErrorHelper.GenerateProblem(result.Errors))
         );
     }
 
-    public async Task SendMessage(string userId, string chatId, string message)
+    public async Task SendMessage(SaveMessageRequest request)
     {
-        await Clients.Group(chatId).SendAsync("ReceiveMessage", userId, message);
+        var command = _mapper.Map<SaveMessageCommand>(request);
+        var result = await _sender.Send(command);
+
+        await result.Match(
+            async value =>
+            {
+                var chatId = value.Message.ChatId.ToString();
+                var response = _mapper.Map<MessageResponse>(value);
+                await Clients.Group(chatId).SendAsync("ReceiveMessage", value);
+            },
+            async onError =>
+                await Clients
+                    .Client(Context.ConnectionId)
+                    .SendAsync("ReceiveError", ErrorHelper.GenerateProblem(onError)));
     }
-    
-    private async Task JoinUserToChatAndNotifyAboutAddingUser(string chatId, 
+
+    private async Task JoinUserToChatAndNotifyAboutAddingUser(string chatId,
         UserResponse userResponse)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
+
+        var request = new SaveMessageRequest(
+            Guid.Parse(chatId),
+            userResponse.UserId,
+            $"User {userResponse.Username} has joined the chat.");
+
+        await SendMessage(request);
     }
 }

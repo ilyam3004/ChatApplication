@@ -1,5 +1,5 @@
 using Application.Common.Result;
-using Application.Models.Users;
+using Application.Models;
 using MediatR;
 
 namespace Application.Features.Users.Commands.CreateUser;

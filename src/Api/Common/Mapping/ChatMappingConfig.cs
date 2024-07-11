@@ -1,4 +1,4 @@
-using Application.Models.Chats;
+using Application.Models;
 using Contracts.Responses;
 using Mapster;
 

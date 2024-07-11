@@ -1,5 +1,5 @@
 namespace Contracts.Requests;
 
 public record JoinChatRequest(
-    Guid UserId, 
+    string UserId, 
     string ChatId);

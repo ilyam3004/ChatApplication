@@ -1,5 +1,5 @@
 using Data.Entities;
 
-namespace Application.Models.Chats;
+namespace Application.Models;
 
 public record ChatResult(Chat Chat);

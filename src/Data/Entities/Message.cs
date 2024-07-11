@@ -7,7 +7,6 @@ public class Message
     public Guid UserId { get; set; }
     public string Text { get; set; }
     public DateTime Date { get; set; }
-    public bool FromUser { get; set; }
 
     public Chat Chat { get; set; }
     public User User { get; set; }

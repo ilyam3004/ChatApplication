@@ -1,5 +1,5 @@
 using Application.Features.Users.Commands.CreateUser;
-using Application.Models.Users;
+using Application.Models;
 using Contracts.Requests;
 using Contracts.Responses;
 using Mapster;

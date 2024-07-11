@@ -29,6 +29,6 @@ public class RemoveChatCommandHandler
 
         _chatRepository.Remove(chat);
 
-        return new Deleted(Messages.Chat.ChatDeleted);
+        return new Deleted(Common.Constants.Messages.Chat.ChatDeleted);
     }
 }

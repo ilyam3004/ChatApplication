@@ -1,5 +1,5 @@
 using Application.Common.Result;
-using Application.Models.Chats;
+using Application.Models;
 using Data.Entities;
 using Data.Repositories;
 using MediatR;
