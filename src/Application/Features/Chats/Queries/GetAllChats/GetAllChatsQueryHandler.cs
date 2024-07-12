@@ -6,12 +6,12 @@ using MediatR;
 
 namespace Application.Features.Chats.Queries.GetAllChats;
 
-public class GetAllChatQueryHandler 
+public class GetAllChatsQueryHandler 
     : IRequestHandler<GetAllChatsQuery, Result<List<ChatResult>>>
 {
     private readonly IRepository<Chat> _repository;
 
-    public GetAllChatQueryHandler(IRepository<Chat> repository)
+    public GetAllChatsQueryHandler(IRepository<Chat> repository)
     {
         _repository = repository;
     }

@@ -3,14 +3,10 @@ using Data.Entities;
 
 namespace Data.Repositories;
 
-public class ChatRepository : IChatRepository
+public class ChatRepository(ApplicationDbContext context) 
+    : Repository<Chat>(context), IChatRepository
 { 
-    private readonly ApplicationDbContext _context;
-    
-    public ChatRepository(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     public async Task<List<Chat>> SearchChats(string searchQuery)
         => await _context.Chats.Where(c =>

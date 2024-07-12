@@ -19,19 +19,22 @@ public class ChatHub : Hub
         _mapper = mapper;
         _sender = sender;
     }
-    
+
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.All.SendAsync("ReceiveMessage", "Someone is connected", CancellationToken.None);
+    }
+
     public async Task TestMe(string someRandomText)
     {
-        await Clients.All.SendAsync(
-            $"{this.Context.User.Identity.Name} : {someRandomText}",
-            CancellationToken.None);
+        await Clients.All.SendAsync("ReceiveMessage", someRandomText, CancellationToken.None);
     }    
 
-    public async Task JoinChat(string UserId, string ChatId)
+    public async Task JoinChat(Guid UserId, Guid ChatId)
     {
         var command = new JoinChatCommand(
-            Guid.Parse(UserId),
-            Guid.Parse(ChatId));
+            UserId,
+            ChatId);
 
         var result = await _sender.Send(command);
 
@@ -39,7 +42,7 @@ public class ChatHub : Hub
             async value =>
             {
                 var response = _mapper.Map<UserResponse>(value);
-                await JoinUserToChatAndNotifyAboutAddingUser(ChatId, response);
+                await JoinUserToChatAndNotifyAboutAddingUser(ChatId.ToString(), response);
             },
             async onError =>
                 await Clients
@@ -59,7 +62,7 @@ public class ChatHub : Hub
             {
                 var chatId = value.Message.ChatId.ToString();
                 var response = _mapper.Map<MessageResponse>(value);
-                await Clients.Group(chatId).SendAsync("ReceiveMessage", value);
+                await Clients.Group(chatId).SendAsync("ReceiveMessage", response);
             },
             async onError =>
                 await Clients

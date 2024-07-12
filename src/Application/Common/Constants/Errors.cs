@@ -19,4 +19,10 @@ public static class Errors
          public static Error UserNotFound => Error.NotFound("User.UserNotFound",
              description: "User not found.");
     }
+    
+    public static class Message
+    {
+         public static Error MessageNotFound => Error.NotFound("Message.UserNotFound",
+             description: "Message not found.");
+    }
 }
