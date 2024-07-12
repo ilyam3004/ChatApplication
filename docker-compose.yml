@@ -2,22 +2,20 @@ version: '3.8'
 
 services:
 
-#  api:
-#    image: ilya3004/lms:api
-#    build:
-#      context: .
-#      dockerfile: src/Api/Dockerfile
-#    ports:
-#      - "8181:80"
-#    environment:
-#      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=chat_app_db;User Id=postgres;Password=password;
-#      - ASPNETCORE_URLS=http://+:80
-#    depends_on:
-#      - postgres
-#    networks:
-#      - dev
-#    volumes:
-#      - ./uploads:/app/uploads
+  api:
+    image: ilya3004/chatapp:api
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    ports:
+      - "8181:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=chat_app_db;User Id=postgres;Password=password;
+      - ASPNETCORE_URLS=http://+:80
+    depends_on:
+      - postgres
+    networks:
+      - dev
 
   postgres:
     container_name: postgres
