@@ -1,9 +1,13 @@
+using Application.Features.Messages.Queries.GetChatMessages;
+using Application.Features.Messages.Commands.SaveMessage;
 using Application.Features.Chats.Commands.JoinChat;
 using Microsoft.AspNetCore.SignalR;
-using Api.Common.Helpers;
-using Application.Features.Messages.Commands.SaveMessage;
-using Contracts.Requests;
+using Application.Common.Constants;
 using Contracts.Responses;
+using Api.Common.Helpers;
+using Application.Common;
+using Application.Models;
+using Contracts.Requests;
 using MapsterMapper;
 using MediatR;
 
@@ -20,36 +24,15 @@ public class ChatHub : Hub
         _sender = sender;
     }
 
-    public override async Task OnConnectedAsync()
+    public async Task JoinChat(JoinChatRequest request)
     {
-        await Clients.All.SendAsync("ReceiveMessage", "Someone is connected", CancellationToken.None);
-    }
-
-    public async Task TestMe(string someRandomText)
-    {
-        await Clients.All.SendAsync("ReceiveMessage", someRandomText, CancellationToken.None);
-    }    
-
-    public async Task JoinChat(Guid UserId, Guid ChatId)
-    {
-        var command = new JoinChatCommand(
-            UserId,
-            ChatId);
+        var command = _mapper.Map<JoinChatCommand>(request);
 
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value =>
-            {
-                var response = _mapper.Map<UserResponse>(value);
-                await JoinUserToChatAndNotifyAboutAddingUser(ChatId.ToString(), response);
-            },
-            async onError =>
-                await Clients
-                    .Client(Context.ConnectionId)
-                    .SendAsync("ReceiveError",
-                        ErrorHelper.GenerateProblem(result.Errors))
-        );
+            async value => await HandleUserJoinAsync(value, command),
+            async error => await SendErrorsToUser(error));
     }
 
     public async Task SendMessage(SaveMessageRequest request)
@@ -64,22 +47,51 @@ public class ChatHub : Hub
                 var response = _mapper.Map<MessageResponse>(value);
                 await Clients.Group(chatId).SendAsync("ReceiveMessage", response);
             },
-            async onError =>
-                await Clients
-                    .Client(Context.ConnectionId)
-                    .SendAsync("ReceiveError", ErrorHelper.GenerateProblem(onError)));
+            async error => await SendErrorsToUser(error));
     }
 
-    private async Task JoinUserToChatAndNotifyAboutAddingUser(string chatId,
+    private async Task HandleUserJoinAsync(UserResult userResult, JoinChatCommand command)
+    {
+        var response = _mapper.Map<UserResponse>(userResult);
+        var chatId = command.ChatId;
+
+        await JoinUserToChat(chatId, response);
+        await NotifyChatMembersAboutUserJoining(chatId, response);
+        await SendAllChatMessageToNewUser(chatId);
+    }
+
+    private async Task JoinUserToChat(Guid chatId, UserResponse userResponse)
+        => await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
+
+    private async Task NotifyChatMembersAboutUserJoining(Guid chatId,
         UserResponse userResponse)
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-
         var request = new SaveMessageRequest(
-            Guid.Parse(chatId),
+            chatId,
             userResponse.UserId,
-            $"User {userResponse.Username} has joined the chat.");
+            Messages.Chat.UserHasJoinTheChat(userResponse.Username));
 
         await SendMessage(request);
     }
+
+    private async Task SendAllChatMessageToNewUser(Guid chatId)
+    {
+        var query = new GetChatMessagesQuery(chatId);
+
+        var result = await _sender.Send(query);
+
+        await result.Match(
+            async value =>
+            {
+                var messages = _mapper.Map<List<MessageResponse>>(value);
+                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage",
+                    messages,
+                    CancellationToken.None);
+            },
+            async error => await SendErrorsToUser(error));
+    }
+
+    private async Task SendErrorsToUser(List<Error> errors)
+        => await Clients.Client(Context.ConnectionId)
+            .SendAsync("ReceiveError", ErrorHelper.GenerateProblem(errors));
 }
