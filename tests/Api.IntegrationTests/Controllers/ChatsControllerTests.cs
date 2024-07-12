@@ -44,7 +44,8 @@ public class ChatsControllerTests
         response.EnsureSuccessStatusCode();
 
         var chatsResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
-        chatsResponse.ChatName.Should().Be(Constants.Chat.ChatName);
-        chatsResponse.ChatOwnerId.Should().Be(Constants.User.UserId);
+        chatsResponse.Should().NotBeNull();
+        chatsResponse?.ChatName.Should().Be(Constants.Chat.ChatName);
+        chatsResponse?.ChatOwnerId.Should().Be(Constants.User.UserId);
     }
 }
