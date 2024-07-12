@@ -33,7 +33,7 @@ public class LeaveChatCommandHandler
         var message = await AddMessageAboutUserLeaving(user);
         
         user.ChatId = null;
-        user.ConenctionId = null;
+        user.ConnectionId = null;
 
         await _repository.Update(user);
 

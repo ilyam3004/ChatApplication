@@ -4,13 +4,13 @@ using Application.Features.Chats.Queries.GetAllChats;
 using Application.Features.Chats.Queries.SearchChat;
 using Microsoft.AspNetCore.SignalR;
 using Application.Common.Constants;
+using Application.Common.Result;
 using Microsoft.AspNetCore.Mvc;
 using Contracts.Responses;
 using Application.Models;
 using Contracts.Requests;
 using MapsterMapper;
 using Api.Hubs;
-using Application.Common.Result;
 using MediatR;
 
 namespace Api.Controllers;
@@ -87,7 +87,7 @@ public class ChatController : ApiController
     {
         foreach (var user in users)
         {
-            string? connectionId = user.User.ConenctionId;
+            string? connectionId = user.User.ConnectionId;
 
             if (connectionId is null) 
                 continue;

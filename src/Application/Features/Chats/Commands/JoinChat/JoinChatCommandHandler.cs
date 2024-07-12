@@ -14,7 +14,8 @@ public class JoinChatCommandHandler
     private readonly IRepository<User> _userRepository;
 
     public JoinChatCommandHandler(IChatRepository chatRepository,
-        IRepository<User> userRepository, IMessageRepository messageRepository)
+        IRepository<User> userRepository, 
+        IMessageRepository messageRepository)
     {
         _chatRepository = chatRepository;
         _userRepository = userRepository;
@@ -35,7 +36,7 @@ public class JoinChatCommandHandler
             return Errors.User.UserNotFound;
 
         user.ChatId = chat.ChatId;
-        user.ConenctionId = command.ConnectionId;
+        user.ConnectionId = command.ConnectionId;
         
         await _userRepository.Update(user);
 
