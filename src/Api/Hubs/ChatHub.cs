@@ -35,18 +35,14 @@ public class ChatHub : Hub
             async error => await SendErrorsToUser(error));
     }
 
-    public async Task SendMessage(SaveMessageRequest request)
+    public async Task SendMessageToChat(SaveMessageRequest request,
+        bool excludeCurrentUser = false)
     {
         var command = _mapper.Map<SaveMessageCommand>(request);
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value =>
-            {
-                var chatId = value.Message.ChatId.ToString();
-                var response = _mapper.Map<MessageResponse>(value);
-                await Clients.Group(chatId).SendAsync("ReceiveMessage", response);
-            },
+            async value => await HandleMessageSendingAsync(value, excludeCurrentUser),
             async error => await SendErrorsToUser(error));
     }
 
@@ -55,23 +51,38 @@ public class ChatHub : Hub
         var response = _mapper.Map<UserResponse>(userResult);
         var chatId = command.ChatId;
 
-        await JoinUserToChat(chatId, response);
+        await JoinUserToChat(chatId);
         await NotifyChatMembersAboutUserJoining(chatId, response);
         await SendAllChatMessageToNewUser(chatId);
     }
 
-    private async Task JoinUserToChat(Guid chatId, UserResponse userResponse)
+    private async Task HandleMessageSendingAsync(MessageResult value,
+        bool excludeCurrentUser)
+    {
+        var chatId = value.Message.ChatId.ToString();
+        var response = _mapper.Map<MessageResponse>(value);
+
+        if (excludeCurrentUser)
+            await Clients.GroupExcept(chatId, Context.ConnectionId).SendAsync(
+                    Constants.Hub.ReceiveMessageMethodName, 
+                    response);
+        else
+            await Clients.Group(chatId).SendAsync(
+                Constants.Hub.ReceiveMessageMethodName, 
+                response);
+    }
+
+    private async Task JoinUserToChat(Guid chatId)
         => await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
 
-    private async Task NotifyChatMembersAboutUserJoining(Guid chatId,
-        UserResponse userResponse)
+    private async Task NotifyChatMembersAboutUserJoining(Guid chatId, UserResponse userResponse)
     {
         var request = new SaveMessageRequest(
             chatId,
             userResponse.UserId,
             Messages.Chat.UserHasJoinTheChat(userResponse.Username));
 
-        await SendMessage(request);
+        await SendMessageToChat(request, excludeCurrentUser: true);
     }
 
     private async Task SendAllChatMessageToNewUser(Guid chatId)
@@ -84,14 +95,17 @@ public class ChatHub : Hub
             async value =>
             {
                 var messages = _mapper.Map<List<MessageResponse>>(value);
-                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage",
-                    messages,
-                    CancellationToken.None);
+                await Clients.Client(Context.ConnectionId)
+                    .SendAsync(Constants.Hub.ReceiveMessageMethodName,
+                        messages,
+                        CancellationToken.None);
             },
             async error => await SendErrorsToUser(error));
     }
 
     private async Task SendErrorsToUser(List<Error> errors)
         => await Clients.Client(Context.ConnectionId)
-            .SendAsync("ReceiveError", ErrorHelper.GenerateProblem(errors));
+            .SendAsync(
+                Constants.Hub.ReceiveErrorMethodName,
+                ErrorHelper.GenerateProblem(errors));
 }
