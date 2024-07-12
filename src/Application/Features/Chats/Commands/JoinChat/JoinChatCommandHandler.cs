@@ -35,6 +35,7 @@ public class JoinChatCommandHandler
             return Errors.User.UserNotFound;
 
         user.ChatId = chat.ChatId;
+        user.ConenctionId = command.ConnectionId;
         
         await _userRepository.Update(user);
 

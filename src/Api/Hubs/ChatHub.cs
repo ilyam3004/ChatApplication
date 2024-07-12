@@ -123,6 +123,7 @@ public class ChatHub : Hub
                         messages,
                         CancellationToken.None);
             },
+            
             async error => await SendErrorsToUser(error));
     }
 

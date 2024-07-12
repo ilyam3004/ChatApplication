@@ -6,4 +6,5 @@ namespace Application.Features.Chats.Commands.JoinChat;
 
 public record JoinChatCommand(
     Guid UserId, 
-    Guid ChatId) : IRequest<Result<MessageResult>>;
+    Guid ChatId,
+    string ConnectionId) : IRequest<Result<MessageResult>>;

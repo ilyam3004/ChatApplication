@@ -5,4 +5,6 @@ namespace Data.Repositories;
 public interface IChatRepository : IRepository<Chat>
 {
     Task<List<Chat>> SearchChats(string searchQuery);
+
+    Task<Chat?> GetChatWithUsers(Guid chatId);
 }

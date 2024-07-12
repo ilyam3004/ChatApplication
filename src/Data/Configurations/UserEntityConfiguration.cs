@@ -10,6 +10,9 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.UserId);
 
+        builder.Property(u => u.ConenctionId)
+            .IsRequired(false);
+
         builder.Property(u => u.Username)
             .HasMaxLength(100)
             .IsRequired();
