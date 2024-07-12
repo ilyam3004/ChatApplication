@@ -35,14 +35,15 @@ public class ChatHub : Hub
             async error => await SendErrorsToUser(error));
     }
 
-    public async Task SendMessageToChat(SaveMessageRequest request,
-        bool excludeCurrentUser = false)
+    public async Task SendMessageToChat(SendMessageRequest request)
     {
         var command = _mapper.Map<SaveMessageCommand>(request);
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value => await HandleMessageSendingAsync(value, excludeCurrentUser),
+            async value => await HandleMessageSendingAsync(
+                value,
+                request.ExcludeCurrentUser),
             async error => await SendErrorsToUser(error));
     }
 
@@ -57,18 +58,18 @@ public class ChatHub : Hub
     }
 
     private async Task HandleMessageSendingAsync(MessageResult value,
-        bool excludeCurrentUser)
+        bool? excludeCurrentUser = null)
     {
         var chatId = value.Message.ChatId.ToString();
         var response = _mapper.Map<MessageResponse>(value);
 
-        if (excludeCurrentUser)
+        if (excludeCurrentUser is true)
             await Clients.GroupExcept(chatId, Context.ConnectionId).SendAsync(
-                    Constants.Hub.ReceiveMessageMethodName, 
-                    response);
+                Constants.Hub.ReceiveMessageMethodName,
+                response);
         else
             await Clients.Group(chatId).SendAsync(
-                Constants.Hub.ReceiveMessageMethodName, 
+                Constants.Hub.ReceiveMessageMethodName,
                 response);
     }
 
@@ -77,12 +78,13 @@ public class ChatHub : Hub
 
     private async Task NotifyChatMembersAboutUserJoining(Guid chatId, UserResponse userResponse)
     {
-        var request = new SaveMessageRequest(
+        var request = new SendMessageRequest(
             chatId,
             userResponse.UserId,
-            Messages.Chat.UserHasJoinTheChat(userResponse.Username));
+            Messages.Chat.UserHasJoinTheChat(userResponse.Username),
+            ExcludeCurrentUser:true);
 
-        await SendMessageToChat(request, excludeCurrentUser: true);
+        await SendMessageToChat(request);
     }
 
     private async Task SendAllChatMessageToNewUser(Guid chatId)

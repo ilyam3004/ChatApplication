@@ -10,6 +10,7 @@ public class MessageMappingConfig : IRegister
     {
         config.NewConfig<MessageResult, MessageResponse>()
             .Map(dest => dest.UserName, src => src.Message.User.Username)
-            .Map(dest => dest.Message, src => src.Message.Text);
+            .Map(dest => dest.Message, src => src.Message.Text)
+            .Map(dest => dest.Date, src => src.Message.Date);
     }
 }
