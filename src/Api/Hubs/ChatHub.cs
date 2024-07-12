@@ -32,7 +32,7 @@ public class ChatHub : Hub
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value => await HandleUserJoiningAsync(value, command),
+            async value => await HandleUserJoiningAsync(value),
             async error => await SendErrorsToUser(error));
     }
 
@@ -59,25 +59,20 @@ public class ChatHub : Hub
             async error => await SendErrorsToUser(error));
     }
 
-    private async Task HandleUserJoiningAsync(UserResult userResult, JoinChatCommand command)
+    private async Task HandleUserJoiningAsync(MessageResult result)
     {
-        var response = _mapper.Map<UserResponse>(userResult);
-        var chatId = command.ChatId;
-
-        await JoinUserToChat(chatId);
-        await NotifyChatMembersAboutUserJoining(
-            response.UserId, 
-            response.Username,
-            isUserLeaving:true);
-        await SendAllChatMessageToNewUser(chatId);
+        await JoinUserToChat(result.Message.ChatId);
+        await HandleMessageSendingAsync(result,
+            excludeCurrentUser: true);
+        await SendAllChatMessageToNewUser(result.Message.ChatId);
     }
 
-    private async Task HandleUserLeavingAsync(LeaveChatResult result)
+    private async Task HandleUserLeavingAsync(MessageResult result)
     {
-        await RemoveUserFromChat(result.ChatId);
-        await NotifyChatMembersAboutUserJoining(result.UserId, 
-            result.Username, 
-            isUserLeaving:true);
+        await HandleMessageSendingAsync(result,
+            excludeCurrentUser: true);
+
+        await RemoveUserFromChat(result.Message.ChatId);
     }
 
     private async Task HandleMessageSendingAsync(MessageResult value,
@@ -103,21 +98,14 @@ public class ChatHub : Hub
             CancellationToken.None);
 
     private async Task RemoveUserFromChat(Guid chatId)
-        => await Groups.RemoveFromGroupAsync(
+    {
+        await Groups.RemoveFromGroupAsync(
             Context.ConnectionId,
             chatId.ToString(),
             CancellationToken.None);
 
-    private async Task NotifyChatMembersAboutUserJoining(Guid userId, string username, bool isUserLeaving)
-    {
-        var request = new SendMessageRequest(
-            userId,
-            isUserLeaving
-                ? Messages.Chat.UserLeavedTheChat(username)
-                : Messages.Chat.UserJoinedTheChat(username),
-            ExcludeCurrentUser: true);
-
-        await SendMessageToChat(request);
+        await Clients.Client(Context.ConnectionId)
+            .SendAsync(Messages.Chat.LeavedChat);
     }
 
     private async Task SendAllChatMessageToNewUser(Guid chatId)

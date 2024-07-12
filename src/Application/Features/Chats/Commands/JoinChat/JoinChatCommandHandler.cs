@@ -7,19 +7,21 @@ using MediatR;
 
 namespace Application.Features.Chats.Commands.JoinChat;
 public class JoinChatCommandHandler 
-    : IRequestHandler<JoinChatCommand, Result<UserResult>>
+    : IRequestHandler<JoinChatCommand, Result<MessageResult>>
 {
-    private readonly IRepository<Chat> _chatRepository;
+    private readonly IMessageRepository _messageRepository;
+    private readonly IChatRepository _chatRepository;
     private readonly IRepository<User> _userRepository;
 
-    public JoinChatCommandHandler(IRepository<Chat> chatRepository, 
-        IRepository<User> userRepository)
+    public JoinChatCommandHandler(IChatRepository chatRepository,
+        IRepository<User> userRepository, IMessageRepository messageRepository)
     {
         _chatRepository = chatRepository;
         _userRepository = userRepository;
+        _messageRepository = messageRepository;
     }
 
-    public async Task<Result<UserResult>> Handle(JoinChatCommand command, 
+    public async Task<Result<MessageResult>> Handle(JoinChatCommand command, 
         CancellationToken cancellationToken)
     {
         var chat = await _chatRepository.GetByIdAsync(command.ChatId);
@@ -33,9 +35,33 @@ public class JoinChatCommandHandler
             return Errors.User.UserNotFound;
 
         user.ChatId = chat.ChatId;
-
+        
         await _userRepository.Update(user);
 
-        return new UserResult(user);
+        var message = await AddMessageAboutUserJoining(user);
+
+        if (message is null)
+            return Errors.Message.MessageNotFound;
+
+        return new MessageResult(message);
+    }
+    
+    
+    private async Task<Message?> AddMessageAboutUserJoining(User user)
+    {
+        var message = new Message
+        {
+            MessageId = Guid.NewGuid(),
+            ChatId = (Guid)user.ChatId!,
+            UserId = user.UserId,
+            Date = DateTime.UtcNow,
+            Text = Common.Constants.Messages.Chat.UserJoinedTheChat(user.Username),
+        };
+
+        await _messageRepository.AddAsync(message);
+        
+        var messageWithUser = await _messageRepository.GetMessageWithUser(message.MessageId);
+
+        return messageWithUser;
     }
 }

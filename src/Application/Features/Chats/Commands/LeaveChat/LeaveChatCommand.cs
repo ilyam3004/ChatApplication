@@ -5,4 +5,4 @@ using MediatR;
 namespace Application.Features.Chats.Commands.LeaveChat;
 
 public record LeaveChatCommand(
-    Guid UserId) : IRequest<Result<LeaveChatResult>>;
+    Guid UserId) : IRequest<Result<MessageResult>>;
