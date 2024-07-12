@@ -24,7 +24,7 @@ This project is a real-time chat application built using .NET with SignalR, allo
 
 # Architecture📐
 
-In our application's backend, we adhere to a 3-tier architecture model, which promotes clear separation of concerns and scalability. The system architecture is organized into three main tiers: Presentation/UI, Business Logic, and Data Access layers.
+In our application's backend, we are using a 3-tier architecture model, which promotes clear separation of concerns and scalability. The system architecture is organized into three main tiers: Presentation/UI, Business Logic, and Data Access layers.
 
 <div align="center">
 <img src="assets/architecture.png">
