@@ -8,12 +8,12 @@ using MediatR;
 namespace Api.Controllers;
 
 [Route("users")]
-public class UserController : ApiController
+public class UsersController : ApiController
 {
     private readonly ISender _sender;
     private readonly IMapper _mapper;
     
-    public UserController(ISender sender, IMapper mapper)
+    public UsersController(ISender sender, IMapper mapper)
     {
         _sender = sender;
         _mapper = mapper;

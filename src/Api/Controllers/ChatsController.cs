@@ -16,13 +16,13 @@ using MediatR;
 namespace Api.Controllers;
 
 [Route("chats")]
-public class ChatController : ApiController
+public class ChatsController : ApiController
 {
     private readonly IHubContext<ChatHub> _chatHub;
     private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public ChatController(ISender sender,
+    public ChatsController(ISender sender,
         IMapper mapper,
         IHubContext<ChatHub> chatHub)
     {
