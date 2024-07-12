@@ -18,6 +18,9 @@ public static class Errors
     {
          public static Error UserNotFound => Error.NotFound("User.UserNotFound",
              description: "User not found.");
+         
+         public static Error UserNotJoinedChat => Error.NotFound("User.UserNotJoinedChat",
+             description: "User has no any chat membership.");
     }
     
     public static class Message

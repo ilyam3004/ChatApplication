@@ -1,12 +1,11 @@
 using Application.Common.Constants;
 using Application.Common.Result;
 using Application.Models;
-using Data.Entities;
 using Data.Repositories;
+using Data.Entities;
 using MediatR;
 
 namespace Application.Features.Chats.Commands.JoinChat;
-
 public class JoinChatCommandHandler 
     : IRequestHandler<JoinChatCommand, Result<UserResult>>
 {
@@ -32,6 +31,10 @@ public class JoinChatCommandHandler
 
         if (user is null)
             return Errors.User.UserNotFound;
+
+        user.ChatId = chat.ChatId;
+
+        await _userRepository.Update(user);
 
         return new UserResult(user);
     }

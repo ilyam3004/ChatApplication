@@ -34,6 +34,17 @@ public class ChatHub : Hub
             async value => await HandleUserJoinAsync(value, command),
             async error => await SendErrorsToUser(error));
     }
+    
+    public async Task LeaveChat(JoinChatRequest request)
+    {
+        var command = _mapper.Map<JoinChatCommand>(request);
+
+        var result = await _sender.Send(command);
+
+        await result.Match(
+            async value => await HandleUserJoinAsync(value, command),
+            async error => await SendErrorsToUser(error));
+    }
 
     public async Task SendMessageToChat(SendMessageRequest request)
     {
@@ -53,7 +64,7 @@ public class ChatHub : Hub
         var chatId = command.ChatId;
 
         await JoinUserToChat(chatId);
-        await NotifyChatMembersAboutUserJoining(chatId, response);
+        await NotifyChatMembersAboutUserJoining(response);
         await SendAllChatMessageToNewUser(chatId);
     }
 
@@ -76,10 +87,9 @@ public class ChatHub : Hub
     private async Task JoinUserToChat(Guid chatId)
         => await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
 
-    private async Task NotifyChatMembersAboutUserJoining(Guid chatId, UserResponse userResponse)
+    private async Task NotifyChatMembersAboutUserJoining(UserResponse userResponse)
     {
         var request = new SendMessageRequest(
-            chatId,
             userResponse.UserId,
             Messages.Chat.UserHasJoinTheChat(userResponse.Username),
             ExcludeCurrentUser:true);

@@ -24,10 +24,10 @@ public class RemoveChatCommandHandler
         if (chat is null)
             return Errors.Chat.ChatNotFound;
 
-        if (chat.ChatOwnerId != chat.ChatOwnerId)
+        if (chat.ChatOwnerId != command.UserId)
             return Errors.Chat.Unauthorized;
 
-        _chatRepository.Remove(chat);
+        await _chatRepository.Remove(chat);
 
         return new Deleted(Common.Constants.Messages.Chat.ChatDeleted);
     }

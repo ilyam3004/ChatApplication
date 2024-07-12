@@ -22,7 +22,8 @@ public class CreateUserCommandHandler
         var user = new User
         {
             UserId = Guid.NewGuid(),
-            Username = command.Username
+            Username = command.Username,
+            ChatId = null
         };
 
         await _userRepository.AddAsync(user);
