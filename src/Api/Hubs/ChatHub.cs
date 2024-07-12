@@ -27,7 +27,7 @@ public class ChatHub : Hub
 
     public async Task JoinChat(JoinChatRequest request)
     {
-        var command = _mapper.Map<JoinChatCommand>(request);
+        var command = _mapper.Map<JoinChatCommand>((request, Context.ConnectionId));
 
         var result = await _sender.Send(command);
 
@@ -123,7 +123,6 @@ public class ChatHub : Hub
                         messages,
                         CancellationToken.None);
             },
-            
             async error => await SendErrorsToUser(error));
     }
 

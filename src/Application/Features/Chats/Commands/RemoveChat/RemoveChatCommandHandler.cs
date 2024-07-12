@@ -1,25 +1,25 @@
 using Application.Common.Constants;
 using Application.Common.Result;
+using Application.Models;
 using Data.Repositories;
-using Data.Entities;
 using MediatR;
 
 namespace Application.Features.Chats.Commands.RemoveChat;
 
 public class RemoveChatCommandHandler
-    : IRequestHandler<RemoveChatCommand, Result<Deleted>>
+    : IRequestHandler<RemoveChatCommand, Result<List<UserResult>>>
 {
-    private readonly IRepository<Chat> _chatRepository;
+    private readonly IChatRepository _chatRepository;
 
-    public RemoveChatCommandHandler(IRepository<Chat> chatRepository)
+    public RemoveChatCommandHandler(IChatRepository chatRepository)
     {
         _chatRepository = chatRepository;
     }
 
-    public async Task<Result<Deleted>> Handle(RemoveChatCommand command,
+    public async Task<Result<List<UserResult>>> Handle(RemoveChatCommand command,
         CancellationToken cancellationToken)
     {
-        var chat = await _chatRepository.GetByIdAsync(command.ChatId);
+        var chat = await _chatRepository.GetChatWithUsers(command.ChatId);
 
         if (chat is null)
             return Errors.Chat.ChatNotFound;
@@ -29,6 +29,6 @@ public class RemoveChatCommandHandler
 
         await _chatRepository.Remove(chat);
 
-        return new Deleted(Common.Constants.Messages.Chat.ChatDeleted);
+        return chat.Users.Select(u => new UserResult(u)).ToList();
     }
 }
