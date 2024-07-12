@@ -1,5 +1,6 @@
 using Application.Features.Messages.Queries.GetChatMessages;
 using Application.Features.Messages.Commands.SaveMessage;
+using Application.Features.Chats.Commands.LeaveChat;
 using Application.Features.Chats.Commands.JoinChat;
 using Microsoft.AspNetCore.SignalR;
 using Application.Common.Constants;
@@ -31,18 +32,18 @@ public class ChatHub : Hub
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value => await HandleUserJoinAsync(value, command),
+            async value => await HandleUserJoiningAsync(value, command),
             async error => await SendErrorsToUser(error));
     }
-    
-    public async Task LeaveChat(JoinChatRequest request)
+
+    public async Task LeaveChat(LeaveChatRequest request)
     {
-        var command = _mapper.Map<JoinChatCommand>(request);
+        var command = _mapper.Map<LeaveChatCommand>(request);
 
         var result = await _sender.Send(command);
 
         await result.Match(
-            async value => await HandleUserJoinAsync(value, command),
+            async value => await HandleUserLeavingAsync(value),
             async error => await SendErrorsToUser(error));
     }
 
@@ -58,14 +59,25 @@ public class ChatHub : Hub
             async error => await SendErrorsToUser(error));
     }
 
-    private async Task HandleUserJoinAsync(UserResult userResult, JoinChatCommand command)
+    private async Task HandleUserJoiningAsync(UserResult userResult, JoinChatCommand command)
     {
         var response = _mapper.Map<UserResponse>(userResult);
         var chatId = command.ChatId;
 
         await JoinUserToChat(chatId);
-        await NotifyChatMembersAboutUserJoining(response);
+        await NotifyChatMembersAboutUserJoining(
+            response.UserId, 
+            response.Username,
+            isUserLeaving:true);
         await SendAllChatMessageToNewUser(chatId);
+    }
+
+    private async Task HandleUserLeavingAsync(LeaveChatResult result)
+    {
+        await RemoveUserFromChat(result.ChatId);
+        await NotifyChatMembersAboutUserJoining(result.UserId, 
+            result.Username, 
+            isUserLeaving:true);
     }
 
     private async Task HandleMessageSendingAsync(MessageResult value,
@@ -85,14 +97,25 @@ public class ChatHub : Hub
     }
 
     private async Task JoinUserToChat(Guid chatId)
-        => await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
+        => await Groups.AddToGroupAsync(
+            Context.ConnectionId,
+            chatId.ToString(),
+            CancellationToken.None);
 
-    private async Task NotifyChatMembersAboutUserJoining(UserResponse userResponse)
+    private async Task RemoveUserFromChat(Guid chatId)
+        => await Groups.RemoveFromGroupAsync(
+            Context.ConnectionId,
+            chatId.ToString(),
+            CancellationToken.None);
+
+    private async Task NotifyChatMembersAboutUserJoining(Guid userId, string username, bool isUserLeaving)
     {
         var request = new SendMessageRequest(
-            userResponse.UserId,
-            Messages.Chat.UserHasJoinTheChat(userResponse.Username),
-            ExcludeCurrentUser:true);
+            userId,
+            isUserLeaving
+                ? Messages.Chat.UserLeavedTheChat(username)
+                : Messages.Chat.UserJoinedTheChat(username),
+            ExcludeCurrentUser: true);
 
         await SendMessageToChat(request);
     }

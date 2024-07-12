@@ -6,7 +6,10 @@ public static class Messages
     {
         public const string ChatDeleted = "Chat deleted succesfully";
 
-        public static string UserHasJoinTheChat(string username)
-            => $"User {username} has joined the chat.";
+        public static string UserJoinedTheChat(string username)
+            => $"{username} joined the chat.";
+        
+        public static string UserLeavedTheChat(string username)
+            => $"{username} leaved the chat.";
     }
 }
