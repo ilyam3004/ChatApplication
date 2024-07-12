@@ -11,8 +11,7 @@
 6. [How to run🏗️](#how-to-run)
 
 # Overview📖
-This application is a comprehensive platform developed using Angular 17 and ASP.NET 8 with gRPC service and JSON transcoding. It incorporates Jwt Role-based authorization, Clean Architecture and other patterns which you can find down below. The system is designed to facilitate effective communication and collaboration between lecturers and students, enabling seamless task assignment, submission, feedback, and grading. The application provides a comprehensive set of features for managing subjects, tasks, and student works. 
-
+This project is a real-time chat application built using .NET with SignalR, allowing users to create, search, connect to, and delete chats. Users can communicate in real-time within these chats, sending messages visible to all participants.
 # Technologies🛠️
 
 - [ASP.NET 8](https://dotnet.microsoft.com/en-us/apps/aspnet)
@@ -42,7 +41,20 @@ The Data Access Layer (DAL) manages the storage and retrieval of data from vario
 This 3-tier architecture model enhances maintainability, scalability, and separation of concerns within our application backend, facilitating easier testing, debugging, and future enhancements.
 
 # Other patterns and principles📚
+Our system incorporates various patterns and principles to enhance architecture, modularity, and maintainability:
 
+## Mediator
+Mediator provides a simple and elegant way to implement communication between different components of a system without directly coupling them together. In this pattern, each component sends messages to a mediator, which then distributes those messages to other components that have registered to handle them. This approach allows for a decoupled and loosely coupled architecture, where components do not need to know about each other's existence, promoting scalability and maintainability. Overall, MediatR promotes the Single Responsibility Principle (SRP) and enhances the modularity and testability of the system.
+
+## CQRS
+CQRS (Command Query Responsibility Segregation) design pattern separates the operations that modify state from those that read state in a system. This separation allows for different optimizations and scaling strategies for the two types of operations. In a CQRS architecture, commands represent actions that change the state of the system, while queries represent requests for information about the system's current state. By separating these concerns, a CQRS system can be optimized for both high write throughput and fast query performance. However, implementing a CQRS architecture can be complex and may require significant changes to existing systems.
+
+## Generic Repository
+The Generic Repository pattern provides a standardized interface for data access operations. It allows for generic implementations of common data access methods, promoting code reusability and consistency in data interactions. The Generic Repository pattern simplifies the data access layer by providing a uniform API for various entities within the application.
+
+## Result
+The Result pattern enhances error handling and response generation in an application. It provides a structured way to handle success and failure scenarios, allowing for better communication of outcomes between components. The Result pattern contributes to the overall robustness of the system by promoting clear and consistent handling of results.
+These patterns collectively contribute to a well-architected system, promoting modularity, testability, and maintainability in software development.
 ## Mediator
 Mediator provides a simple and elegant way to implement communication between different components of a system without directly coupling them together. In this pattern, each component sends messages to a mediator, which then distributes those messages to other components that have registered to handle them. This approach allows for a decoupled and loosely coupled architecture, where components do not need to know about each other's existence, promoting scalability and maintainability. Overall, MediatR promotes the Single Responsibility Principle (SRP) and enhances the modularity and testability of the system.
 
